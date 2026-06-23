@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Yvette 待辦清單</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.31.0/dist/tabler-icons.min.css" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --green-bg: #EAF3DE; --green-border: #C0DD97; --green-text: #27500A; --green-icon: #639922;
+      --blue-bg: #E6F1FB; --blue-border: #B5D4F4; --blue-text: #0C447C; --blue-icon: #378ADD;
+      --purple-bg: #EEEDFE; --purple-border: #CECBF6; --purple-text: #3C3489; --purple-icon: #7F77DD;
+      --radius: 12px; --radius-sm: 8px;
+    }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #f5f5f3;
+      min-height: 100vh;
+      padding: 24px 16px 48px;
+      color: #1a1a1a;
+    }
+    .container { max-width: 560px; margin: 0 auto; }
+    h1 { font-size: 22px; font-weight: 600; margin-bottom: 4px; }
+    .subtitle { font-size: 13px; color: #888; margin-bottom: 24px; }
+
+    .input-card {
+      background: #fff;
+      border: 0.5px solid #ddd;
+      border-radius: var(--radius);
+      padding: 16px;
+      margin-bottom: 24px;
+    }
+    .input-row { display: flex; gap: 8px; margin-bottom: 12px; }
+    .input-row input {
+      flex: 1; padding: 9px 12px; font-size: 15px;
+      border: 0.5px solid #ddd; border-radius: var(--radius-sm);
+      outline: none; background: #fafafa;
+    }
+    .input-row input:focus { border-color: #aaa; background: #fff; }
+    .add-btn {
+      padding: 9px 16px; font-size: 14px; font-weight: 500;
+      background: #1a1a1a; color: #fff;
+      border: none; border-radius: var(--radius-sm); cursor: pointer;
+      display: flex; align-items: center; gap: 6px; white-space: nowrap;
+    }
+    .add-btn:active { opacity: 0.8; }
+    .cat-row { display: flex; gap: 8px; }
+    .cat-btn {
+      flex: 1; padding: 7px 8px; font-size: 12px; font-weight: 500;
+      border-radius: var(--radius-sm); cursor: pointer;
+      border: 1.5px solid transparent; text-align: center; transition: all 0.15s;
+    }
+    .cat-btn.school { background: var(--green-bg); color: var(--green-text); border-color: var(--green-border); }
+    .cat-btn.home   { background: var(--blue-bg);   color: var(--blue-text);   border-color: var(--blue-border); }
+    .cat-btn.personal { background: var(--purple-bg); color: var(--purple-text); border-color: var(--purple-border); }
+    .cat-btn.selected { box-shadow: 0 0 0 2px #1a1a1a; }
+
+    .section { margin-bottom: 20px; }
+    .section-label {
+      display: flex; align-items: center; gap: 8px;
+      font-size: 13px; font-weight: 600;
+      margin-bottom: 8px; padding-bottom: 6px;
+      border-bottom: 0.5px solid #e0e0e0;
+    }
+    .dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
+    .dot.school { background: var(--green-icon); }
+    .dot.home   { background: var(--blue-icon); }
+    .dot.personal { background: var(--purple-icon); }
+    .label-school { color: var(--green-text); }
+    .label-home   { color: var(--blue-text); }
+    .label-personal { color: var(--purple-text); }
+    .count { margin-left: auto; font-size: 11px; font-weight: 400; color: #aaa; }
+
+    .todo-item {
+      display: flex; align-items: center; gap: 10px;
+      padding: 10px 12px; border-radius: var(--radius-sm);
+      margin-bottom: 6px; border: 1px solid transparent;
+      cursor: pointer; transition: opacity 0.15s;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .todo-item:active { opacity: 0.6; }
+    .todo-item.school   { background: var(--green-bg);   border-color: var(--green-border); }
+    .todo-item.home     { background: var(--blue-bg);    border-color: var(--blue-border); }
+    .todo-item.personal { background: var(--purple-bg);  border-color: var(--purple-border); }
+    .todo-text { flex: 1; font-size: 14px; line-height: 1.4; }
+    .todo-text.school   { color: var(--green-text); }
+    .todo-text.home     { color: var(--blue-text); }
+    .todo-text.personal { color: var(--purple-text); }
+    .todo-icon { font-size: 16px; flex-shrink: 0; }
+    .todo-icon.school   { color: var(--green-icon); }
+    .todo-icon.home     { color: var(--blue-icon); }
+    .todo-icon.personal { color: var(--purple-icon); }
+    .trash-icon { font-size: 15px; color: #bbb; flex-shrink: 0; }
+
+    .empty { font-size: 13px; color: #bbb; padding: 6px 12px; }
+    .status { font-size: 12px; color: #aaa; text-align: center; margin-top: 8px; min-height: 18px; }
+    .status.error { color: #c0392b; }
+
+    @media (max-width: 480px) {
+      body { padding: 16px 12px 40px; }
+      h1 { font-size: 20px; }
+      .cat-btn { font-size: 11px; padding: 6px 4px; }
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+  <h1>待辦清單</h1>
+  <p class="subtitle">點選項目即可標記完成並刪除</p>
+
+  <div class="input-card">
+    <div class="input-row">
+      <input type="text" id="todo-input" placeholder="輸入待辦事項…" />
+      <button class="add-btn" onclick="addTodo()">
+        <i class="ti ti-plus"></i>新增
+      </button>
+    </div>
+    <div class="cat-row">
+      <div class="cat-btn school selected" id="btn-school" onclick="selectCat('school')">🎓 學校業務</div>
+      <div class="cat-btn home"            id="btn-home"   onclick="selectCat('home')">🏠 家庭事務</div>
+      <div class="cat-btn personal"        id="btn-personal" onclick="selectCat('personal')">✦ 個人／其他</div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-label">
+      <div class="dot school"></div>
+      <span class="label-school">學校業務</span>
+      <span class="count" id="count-school">0 項</span>
+    </div>
+    <div id="list-school"></div>
+  </div>
+
+  <div class="section">
+    <div class="section-label">
+      <div class="dot home"></div>
+      <span class="label-home">家庭事務</span>
+      <span class="count" id="count-home">0 項</span>
+    </div>
+    <div id="list-home"></div>
+  </div>
+
+  <div class="section">
+    <div class="section-label">
+      <div class="dot personal"></div>
+      <span class="label-personal">個人／其他</span>
+      <span class="count" id="count-personal">0 項</span>
+    </div>
+    <div id="list-personal"></div>
+  </div>
+
+  <div class="status" id="status"></div>
+</div>
+
+<script>
+  const SUPABASE_URL = 'https://rbjvtidpcpmoixiezquk.supabase.co';
+  const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJianZ0aWRwY3Btb2l4aWV6cXVrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIxNTU0MjMsImV4cCI6MjA5NzczMTQyM30.wAq_snM4EvLlPznQ6yjcceuBQsLz0XmqGsRlCgnz-qQ';
+  const API = `${SUPABASE_URL}/rest/v1/todos`;
+  const HEADERS = {
+    'Content-Type': 'application/json',
+    'apikey': SUPABASE_KEY,
+    'Authorization': `Bearer ${SUPABASE_KEY}`,
+    'Prefer': 'return=representation'
+  };
+
+  let todos = [];
+  let selectedCat = 'school';
+
+  const catIcons = { school: 'ti-school', home: 'ti-home', personal: 'ti-user' };
+
+  function selectCat(cat) {
+    selectedCat = cat;
+    ['school','home','personal'].forEach(c =>
+      document.getElementById('btn-' + c).classList.toggle('selected', c === cat)
+    );
+  }
+
+  function setStatus(msg, isError = false) {
+    const el = document.getElementById('status');
+    el.textContent = msg;
+    el.className = 'status' + (isError ? ' error' : '');
+  }
+
+  async function loadTodos() {
+    setStatus('載入中…');
+    try {
+      const res = await fetch(`${API}?order=created_at.asc`, { headers: HEADERS });
+      if (!res.ok) throw new Error(await res.text());
+      todos = await res.json();
+      render();
+      setStatus('');
+    } catch (e) {
+      setStatus('載入失敗：' + e.message, true);
+    }
+  }
+
+  async function addTodo() {
+    const input = document.getElementById('todo-input');
+    const text = input.value.trim();
+    if (!text) return;
+    input.value = '';
+    setStatus('新增中…');
+    try {
+      const res = await fetch(API, {
+        method: 'POST',
+        headers: HEADERS,
+        body: JSON.stringify({ text, category: selectedCat, created_at: new Date().toISOString() })
+      });
+      if (!res.ok) throw new Error(await res.text());
+      const [item] = await res.json();
+      todos.push(item);
+      render();
+      setStatus('');
+    } catch (e) {
+      setStatus('新增失敗：' + e.message, true);
+    }
+    input.focus();
+  }
+
+  async function removeTodo(id) {
+    setStatus('刪除中…');
+    try {
+      const res = await fetch(`${API}?id=eq.${id}`, { method: 'DELETE', headers: HEADERS });
+      if (!res.ok) throw new Error(await res.text());
+      todos = todos.filter(t => t.id !== id);
+      render();
+      setStatus('');
+    } catch (e) {
+      setStatus('刪除失敗：' + e.message, true);
+    }
+  }
+
+  function render() {
+    ['school','home','personal'].forEach(cat => {
+      const items = todos.filter(t => t.category === cat);
+      document.getElementById('count-' + cat).textContent = items.length + ' 項';
+      const el = document.getElementById('list-' + cat);
+      if (!items.length) {
+        el.innerHTML = '<div class="empty">（無待辦事項）</div>';
+        return;
+      }
+      el.innerHTML = items.map(t => `
+        <div class="todo-item ${cat}" onclick="removeTodo(${t.id})">
+          <i class="ti ${catIcons[cat]} todo-icon ${cat}"></i>
+          <span class="todo-text ${cat}">${t.text.replace(/</g,'&lt;')}</span>
+          <i class="ti ti-trash trash-icon"></i>
+        </div>
+      `).join('');
+    });
+  }
+
+  document.getElementById('todo-input').addEventListener('keydown', e => {
+    if (e.key === 'Enter') addTodo();
+  });
+
+  loadTodos();
+</script>
+</body>
+</html>
