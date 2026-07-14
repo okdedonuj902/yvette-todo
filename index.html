@@ -51,8 +51,8 @@
       border-radius: var(--radius-sm); cursor: pointer;
       border: 1.5px solid transparent; text-align: center; transition: all 0.15s;
     }
-    .cat-btn.school { background: var(--green-bg); color: var(--green-text); border-color: var(--green-border); }
-    .cat-btn.home   { background: var(--blue-bg);   color: var(--blue-text);   border-color: var(--blue-border); }
+    .cat-btn.school   { background: var(--green-bg);  color: var(--green-text);  border-color: var(--green-border); }
+    .cat-btn.home     { background: var(--blue-bg);   color: var(--blue-text);   border-color: var(--blue-border); }
     .cat-btn.personal { background: var(--purple-bg); color: var(--purple-text); border-color: var(--purple-border); }
     .cat-btn.selected { box-shadow: 0 0 0 2px #1a1a1a; }
 
@@ -64,11 +64,11 @@
       border-bottom: 0.5px solid #e0e0e0;
     }
     .dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
-    .dot.school { background: var(--green-icon); }
-    .dot.home   { background: var(--blue-icon); }
+    .dot.school   { background: var(--green-icon); }
+    .dot.home     { background: var(--blue-icon); }
     .dot.personal { background: var(--purple-icon); }
-    .label-school { color: var(--green-text); }
-    .label-home   { color: var(--blue-text); }
+    .label-school   { color: var(--green-text); }
+    .label-home     { color: var(--blue-text); }
     .label-personal { color: var(--purple-text); }
     .count { margin-left: auto; font-size: 11px; font-weight: 400; color: #aaa; }
 
@@ -80,9 +80,9 @@
       -webkit-tap-highlight-color: transparent;
     }
     .todo-item:active { opacity: 0.6; }
-    .todo-item.school   { background: var(--green-bg);   border-color: var(--green-border); }
-    .todo-item.home     { background: var(--blue-bg);    border-color: var(--blue-border); }
-    .todo-item.personal { background: var(--purple-bg);  border-color: var(--purple-border); }
+    .todo-item.school   { background: var(--green-bg);  border-color: var(--green-border); }
+    .todo-item.home     { background: var(--blue-bg);   border-color: var(--blue-border); }
+    .todo-item.personal { background: var(--purple-bg); border-color: var(--purple-border); }
     .todo-text { flex: 1; font-size: 14px; line-height: 1.4; }
     .todo-text.school   { color: var(--green-text); }
     .todo-text.home     { color: var(--blue-text); }
@@ -117,8 +117,8 @@
       </button>
     </div>
     <div class="cat-row">
-      <div class="cat-btn school selected" id="btn-school" onclick="selectCat('school')">🎓 學校業務</div>
-      <div class="cat-btn home"            id="btn-home"   onclick="selectCat('home')">🏠 家庭事務</div>
+      <div class="cat-btn school selected" id="btn-school"   onclick="selectCat('school')">🎓 學校業務</div>
+      <div class="cat-btn home"            id="btn-home"     onclick="selectCat('home')">🏠 家庭事務</div>
       <div class="cat-btn personal"        id="btn-personal" onclick="selectCat('personal')">✦ 個人／其他</div>
     </div>
   </div>
@@ -154,19 +154,9 @@
 </div>
 
 <script>
-  const SUPABASE_URL = 'https://rbjvtidpcpmoixiezquk.supabase.co';
-  const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJianZ0aWRwY3Btb2l4aWV6cXVrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIxNTU0MjMsImV4cCI6MjA5NzczMTQyM30.wAq_snM4EvLlPznQ6yjcceuBQsLz0XmqGsRlCgnz-qQ';
-  const API = `${SUPABASE_URL}/rest/v1/todos`;
-  const HEADERS = {
-    'Content-Type': 'application/json',
-    'apikey': SUPABASE_KEY,
-    'Authorization': `Bearer ${SUPABASE_KEY}`,
-    'Prefer': 'return=representation'
-  };
-
+  const API = 'https://yvette-todo1-api.okdedonuj.workers.dev';
   let todos = [];
   let selectedCat = 'school';
-
   const catIcons = { school: 'ti-school', home: 'ti-home', personal: 'ti-user' };
 
   function selectCat(cat) {
@@ -185,7 +175,7 @@
   async function loadTodos() {
     setStatus('載入中…');
     try {
-      const res = await fetch(`${API}?order=created_at.asc`, { headers: HEADERS });
+      const res = await fetch(`${API}/todos`);
       if (!res.ok) throw new Error(await res.text());
       todos = await res.json();
       render();
@@ -202,13 +192,13 @@
     input.value = '';
     setStatus('新增中…');
     try {
-      const res = await fetch(API, {
+      const res = await fetch(`${API}/todos`, {
         method: 'POST',
-        headers: HEADERS,
-        body: JSON.stringify({ text, category: selectedCat, created_at: new Date().toISOString() })
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text, category: selectedCat })
       });
       if (!res.ok) throw new Error(await res.text());
-      const [item] = await res.json();
+      const item = await res.json();
       todos.push(item);
       render();
       setStatus('');
@@ -221,7 +211,7 @@
   async function removeTodo(id) {
     setStatus('刪除中…');
     try {
-      const res = await fetch(`${API}?id=eq.${id}`, { method: 'DELETE', headers: HEADERS });
+      const res = await fetch(`${API}/todos/${id}`, { method: 'DELETE' });
       if (!res.ok) throw new Error(await res.text());
       todos = todos.filter(t => t.id !== id);
       render();
